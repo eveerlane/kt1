@@ -49,14 +49,47 @@ class QueueIterator:
         self.queue = queue
         self.forward_data = []
         self.backward_data = []
+        self.current_index = 0
+        self.direction = 'forward'
         self._collect_data()
     
     def _collect_data(self):
         current = self.queue.head
         while current:
             self.forward_data.append(current.value)
-            current = current.next
+            current = self.next_node(current)
         self.backward_data = self.forward_data[::-1]
+    
+    def next_node(self, current_node):
+        return current_node.next
+    
+    def __iter__(self):
+        return self
+    
+    def next(self):
+        if self.direction == 'forward':
+            if self.current_index < len(self.forward_data):
+                value = self.forward_data[self.current_index]
+                self.current_index += 1
+                return value
+            else:
+                raise StopIteration
+        else:
+            if self.current_index < len(self.backward_data):
+                value = self.backward_data[self.current_index]
+                self.current_index += 1
+                return value
+            else:
+                raise StopIteration
+    
+    def __next__(self):
+        return self.next()
+    
+    def set_direction(self, direction):
+        if direction not in ['forward', 'backward']:
+            raise ValueError("Направление должно быть 'forward' или 'backward'")
+        self.direction = direction
+        self.current_index = 0
     
     def display_forward(self):
         print("Очередь в прямом порядке:")
@@ -129,77 +162,21 @@ if __name__ == "__main__":
     
     print("\n" + "="*50)
     iterator = QueueIterator(queue)
-    iterator.display_forward()
-    iterator.display_backward()
     
+    print("Итерация в прямом направлении:")
+    iterator.set_direction('forward')
+    for value in iterator:
+        print(value, end=" ")
+    print()
+    
+    print("Итерация в обратном направлении:")
+    iterator.set_direction('backward')
+    for value in iterator:
+        print(value, end=" ")
+    print()
 
     print("\n" + "="*50)
     print("Чтение из файла rez.dat:")
     with open('rez.dat', 'r', encoding='utf-8') as f:
         content = f.read()
         print(content)
-        
-"""
-TEST1
-Введите число К: 1
-Исходная очередь:
-1 -> None
-Сколько чисел надо удалить? 0
-Удаляем первые 0 элементов:
-Удаленные элементы: []
-
-Сумма удаленных элементов: 0
-
-Новый первый элемент: 1
-
-Указатель на новый первый элемент: 2375925775376
-
-Очередь после удаления:
-1 -> None
-
-==================================================
-Очередь в прямом порядке:
-1
-Очередь в обратном порядке:
-1
-
-==================================================
-Чтение из файла rez.dat:
-Удаленные элементы: []
-Сумма удаленных элементов: 0
-Новый первый элемент: 1
-Указатель на новый первый элемент: 2375925775376
-
-
-TEST2
-Введите число К: 10
-Исходная очередь:
-10 -> 75 -> 87 -> 29 -> 63 -> 85 -> 69 -> 54 -> 87 -> 4 -> None
-Сколько чисел надо удалить? -12
-K не может быть меньше нуля: 
-Сколько чисел надо удалить? 2
-Удаляем первые 2 элементов:
-Удаленные элементы: [10, 75]
-
-Сумма удаленных элементов: 85
-
-Новый первый элемент: 87
-
-Указатель на новый первый элемент: 2919206103424
-
-Очередь после удаления:
-87 -> 29 -> 63 -> 85 -> 69 -> 54 -> 87 -> 4 -> None
-
-==================================================
-Очередь в прямом порядке:
-87 29 63 85 69 54 87 4
-Очередь в обратном порядке:
-4 87 54 69 85 63 29 87
-
-==================================================
-Чтение из файла rez.dat:
-Удаленные элементы: [10, 75]
-Сумма удаленных элементов: 85
-Новый первый элемент: 87
-Указатель на новый первый элемент: 2919206103424
-"""
